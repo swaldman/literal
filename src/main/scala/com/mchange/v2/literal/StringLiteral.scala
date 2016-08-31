@@ -213,9 +213,9 @@ object StringLiteral {
           case 'x' if ((flags & Flag.x) != 0) => _parseStringLiteral( flags, source, index + 1, InQuoteAtHex( reverseNascent, Nil, 0 ) )
 
           // note that we don't increment index, so that we can reinterpret this character
-          case '0' | '1' | '2' | '3' if ((flags & Flag.octal) != 0) => _parseStringLiteral( flags, source, index, InQuoteAtOctal( reverseNascent, Nil, 0 ) )
+          case c if ((flags & Flag.octal) != 0 && OctalChars(c)) => _parseStringLiteral( flags, source, index, InQuoteAtOctal( reverseNascent, Nil, 0 ) )
 
-          case _ => throw new BadStringLiteralException( s"Unsupported escape character: '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
+          case c => throw new BadStringLiteralException( s"Unsupported escape character: '${c}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
         }
       }
       case InQuoteAtHex( reverseNascent, reverseNascentHex, len ) => {
@@ -242,8 +242,10 @@ object StringLiteral {
             val newChar = Integer.parseInt( newReverseNascentOctal.reverse.mkString, 8 ).toChar
             _parseStringLiteral( flags, source, index + 1, InQuote( newChar :: reverseNascent ) )
           }
-        } else {
-          throw new BadStringLiteralException( s"Bad character found in octal escape, not octal digit: '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
+        } else { // support short octal escapes
+          assert( len != 0 ) // we have to see at least one octal digit, or we'd not be in this state
+          val newChar = Integer.parseInt( reverseNascentOctal.reverse.mkString, 8 ).toChar
+          _parseStringLiteral( flags, source, index, InQuote( newChar :: reverseNascent ) ) // note we stay at index, rather than index + 1, since this non-octal char should be part of the string
         }
       }
       case InQuoteAtUnicode( reverseNascent, reverseNascentUnicode, len ) => {
