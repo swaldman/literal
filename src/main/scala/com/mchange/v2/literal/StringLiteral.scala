@@ -2,6 +2,8 @@ package com.mchange.sc.v2.literal
 
 import scala.annotation.tailrec
 
+import java.lang.Character.isISOControl
+
 object StringLiteral {
 
   final class BadStringLiteralException( msg : String, cause : Throwable = null ) extends Exception( msg, cause )
@@ -48,37 +50,70 @@ object StringLiteral {
     a | b | f | n | r | t | u | v | x | backslash | singlequote | doublequote | questionmark | octal | e | E
   }
 
-  def parseStringLiteral( flags : Int, source : String, index : Int = 0 ) : String = {
-    _parseStringLiteral( flags, source, index, QuoteState.NoQuote )
+  case class Parsed( endQuoteIndex : Int, parsed : String )
+
+  def parseStringLiteral( flags : Int, source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    _parseStringLiteral( flags, source, startQuoteIndex, QuoteState.NoQuote )
   }
-  def parseCStringLiteral( source : String, index : Int = 0 ) : String = {
-    parseStringLiteral( C_FLAGS, source : String, index : Int )
+  def parseCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    parseStringLiteral( C_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseGCCStringLiteral( source : String, index : Int = 0 ) : String = {
-    parseStringLiteral( GCC_FLAGS, source : String, index : Int )
+  def parseGCCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    parseStringLiteral( GCC_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseJavaStringLiteral( source : String, index : Int = 0 ) : String = {
-    parseStringLiteral( JAVA_FLAGS, source : String, index : Int )
+  def parseJavaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    parseStringLiteral( JAVA_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseScalaStringLiteral( source : String, index : Int = 0 ) : String = {
-    parseStringLiteral( SCALA_FLAGS, source : String, index : Int )
+  def parseScalaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    parseStringLiteral( SCALA_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parsePermissiveStringLiteral( source : String, index : Int = 0 ) : String = {
-    parseStringLiteral( PERMISSIVE_FLAGS, source : String, index : Int )
+  def parsePermissiveStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+    parseStringLiteral( PERMISSIVE_FLAGS, source : String, startQuoteIndex : Int )
   }
 
+  def formatStringLiteral( asciiOnly : Boolean, flags : Int, raw : String ) : String = _formatStringLiteral( asciiOnly, flags, raw, 0, Nil )
+  def formatCStringLiteral( raw : String )                                  : String = _formatStringLiteral( true, C_FLAGS, raw, 0, Nil )
+  def formatGCCStringLiteral( raw : String )                                : String = _formatStringLiteral( true, GCC_FLAGS, raw, 0, Nil )
+  def formatAsciiJavaStringLiteral ( raw : String )                         : String = _formatStringLiteral( true, JAVA_FLAGS, raw, 0, Nil )
+  def formatUnicodeJavaStringLiteral ( raw : String )                       : String = _formatStringLiteral( false, JAVA_FLAGS, raw, 0, Nil )
+  def formatAsciiScalaStringLiteral( raw : String )                         : String = _formatStringLiteral( true, SCALA_FLAGS, raw, 0, Nil )
+  def formatUnicodeScalaStringLiteral( raw : String )                       : String = _formatStringLiteral( false, SCALA_FLAGS, raw, 0, Nil )
+  def formatAsciiPermissiveStringLiteral( raw : String )                    : String = _formatStringLiteral( true, PERMISSIVE_FLAGS, raw, 0, Nil )
+  def formatUnicodePermissiveStringLiteral( raw : String )                  : String = _formatStringLiteral( false, PERMISSIVE_FLAGS, raw, 0, Nil )
+
+  def formatJavaStringLiteral( raw : String )       : String = formatAsciiJavaStringLiteral( raw )
+  def formatScalaStringLiteral( raw : String )      : String = formatAsciiScalaStringLiteral( raw )
+  def formatPermissiveStringLiteral( raw : String ) : String = formatAsciiPermissiveStringLiteral( raw )
+
   private val SimpleSubstitutions = Map (
-    'a' -> 0x07.toChar,
-    'b' -> 0x08.toChar,
-    'f' -> 0x0C.toChar,
-    'n' -> 0x0A.toChar,
-    'r' -> 0x0D.toChar,
-    't' -> 0x09.toChar,
-    'v' -> 0x0B.toChar,
+    'a'  -> 0x07.toChar,
+    'b'  -> 0x08.toChar,
+    'f'  -> 0x0C.toChar,
+    'n'  -> 0x0A.toChar,
+    'r'  -> 0x0D.toChar,
+    't'  -> 0x09.toChar,
+    'v'  -> 0x0B.toChar,
     '\\' -> 0x5C.toChar,
     '\'' -> 0x27.toChar,
     '\"' -> 0x22.toChar,
-    '?' -> 0x3F.toChar
+    '?'  -> 0x3F.toChar,
+    'e'  -> 0x1B.toChar,
+    'E'  -> 0x1B.toChar
+  )
+
+  private val ReverseSimpleSubstitutions = Map (
+    0x07.toChar -> ( Flag.a, 'a' ),
+    0x08.toChar -> ( Flag.b, 'b' ),
+    0x0C.toChar -> ( Flag.f, 'f' ),
+    0x0A.toChar -> ( Flag.n, 'n' ),
+    0x0D.toChar -> ( Flag.r, 'r' ),
+    0x09.toChar -> ( Flag.t, 't' ),
+    0x0B.toChar -> ( Flag.v, 'v' ),
+    0x5C.toChar -> ( Flag.backslash,    '\\' ),
+    0x27.toChar -> ( Flag.singlequote,  '\'' ),
+    0x22.toChar -> ( Flag.doublequote,  '\"' ),
+    0x3F.toChar -> ( Flag.questionmark, '?'  ),
+    0x1B.toChar -> ( Flag.e, 'e' )  // the choice of the lowercase variant here is arbitrary
   )
 
   private final object QuoteState {
@@ -99,7 +134,50 @@ object StringLiteral {
   private val HexChars   = Set( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F' )
 
   @tailrec
-  private def _parseStringLiteral( flags : Int, source : String, index : Int, quoteState : QuoteState ) : String = {
+  private def _formatStringLiteral( asciiOnly : Boolean, flags : Int, source : String, index : Int, reverseNascent : List[Char] ) : String = {
+    if ( index == source.length ) {
+      "\"" + reverseNascent.reverse.mkString + "\""
+    } else {
+      val current = source.charAt( index )
+
+      ReverseSimpleSubstitutions.get( current ) match {
+        case Some( Tuple2( flag, char ) ) if ( (flag & flags) != 0 )                                                    => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, char :: '\\' :: reverseNascent )
+        }
+        case Some( Tuple2( flag, char ) ) if ( asciiOnly && current > 127 )                                             => {
+          throw new BadStringLiteralException( s"Can't format '${current}' as ASCII. (Unicode escape not permitted.)" )
+        }
+        case Some( Tuple2( flag, char ) )                                                                               => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, current :: reverseNascent )
+        }
+        case None                         if ( asciiOnly && current > 127 && (Flag.u & flags) != 0 )                    => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, asUnicodeEscaped(current).toList.reverse ::: reverseNascent )
+        }
+        case None                         if ( asciiOnly && current > 127 )                                             => {
+          throw new BadStringLiteralException( s"Can't format '${current}' as ASCII. (Unicode escape not permitted.)" )
+        }
+        case None                         if ( isISOControl( current ) && current <= 127 && (Flag.octal & flags) != 0 ) => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, asOctalEscaped(current).toList.reverse ::: reverseNascent )
+        }
+        case None                         if ( isISOControl( current ) && current <= 127 && (Flag.x & flags) != 0 )     => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, asHexEscaped(current).toList.reverse ::: reverseNascent )
+        }
+        case None                         if ( isISOControl( current ) && (Flag.u & flags) != 0 )                       => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, asUnicodeEscaped(current).toList.reverse ::: reverseNascent )
+        }
+        case None                                                                                                       => {
+          _formatStringLiteral( asciiOnly, flags, source, index + 1, current :: reverseNascent )
+        }
+      }
+    }
+  }
+
+  private def asUnicodeEscaped( c : Char ) : String = f"\\u${c}%4h".map( c => if ( c == ' ' ) '0' else c ) // i don't know why the zero-pad flag doesn't work with the h converter
+  private def asHexEscaped( c : Char )     : String = f"\\x${c}%2h".map( c => if ( c == ' ' ) '0' else c ) // i don't know why the zero-pad flag doesn't work with the h converter
+  private def asOctalEscaped( c : Char )   : String = f"\\${c}%03o"
+
+  @tailrec
+  private def _parseStringLiteral( flags : Int, source : String, index : Int, quoteState : QuoteState ) : StringLiteral.Parsed = {
     val current = source.charAt( index )
 
     quoteState match {
@@ -112,7 +190,7 @@ object StringLiteral {
       }
       case InQuote( reverseNascent ) => {
         current match {
-          case '\"' => reverseNascent.reverse.mkString
+          case '\"' => StringLiteral.Parsed( index, reverseNascent.reverse.mkString )
           case '\\' => _parseStringLiteral( flags, source, index + 1, InQuoteAfterSlash( reverseNascent ) )
           case c    => _parseStringLiteral( flags, source, index + 1, InQuote( c :: reverseNascent ) )
         }
