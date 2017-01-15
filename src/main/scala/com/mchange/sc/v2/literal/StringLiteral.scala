@@ -121,10 +121,10 @@ object StringLiteral {
 
     case class InQuote( reverseNascent : List[Char] ) extends QuoteState
 
-    case class InQuoteAfterSlash( reverseNascant : List[Char]                                                ) extends QuoteState
-    case class InQuoteAtOctal   ( reverseNascant : List[Char], reverseNascentOctal   : List[Char], len : Int ) extends QuoteState
-    case class InQuoteAtHex     ( reverseNascant : List[Char], reverseNascentHex     : List[Char], len : Int ) extends QuoteState
-    case class InQuoteAtUnicode ( reverseNascant : List[Char], reverseNascentUnicode : List[Char], len : Int ) extends QuoteState
+    case class InQuoteAfterSlash( reverseNascent : List[Char]                                                ) extends QuoteState
+    case class InQuoteAtOctal   ( reverseNascent : List[Char], reverseNascentOctal   : List[Char], len : Int ) extends QuoteState
+    case class InQuoteAtHex     ( reverseNascent : List[Char], reverseNascentHex     : List[Char], len : Int ) extends QuoteState
+    case class InQuoteAtUnicode ( reverseNascent : List[Char], reverseNascentUnicode : List[Char], len : Int ) extends QuoteState
   }
   private trait QuoteState
 
