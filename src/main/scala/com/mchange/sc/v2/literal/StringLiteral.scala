@@ -50,24 +50,24 @@ object StringLiteral {
     a | b | f | n | r | t | u | v | x | backslash | singlequote | doublequote | questionmark | octal | e | E
   }
 
-  case class Parsed( endQuoteIndex : Int, parsed : String )
+  case class Parse( endQuoteIndex : Int, parsed : String )
 
-  def parseStringLiteral( flags : Int, source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parseStringLiteral( flags : Int, source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     _parseStringLiteral( flags, source, startQuoteIndex, QuoteState.NoQuote )
   }
-  def parseCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parseCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     parseStringLiteral( C_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseGCCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parseGCCStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     parseStringLiteral( GCC_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseJavaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parseJavaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     parseStringLiteral( JAVA_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parseScalaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parseScalaStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     parseStringLiteral( SCALA_FLAGS, source : String, startQuoteIndex : Int )
   }
-  def parsePermissiveStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parsed = {
+  def parsePermissiveStringLiteral( source : String, startQuoteIndex : Int = 0 ) : StringLiteral.Parse = {
     parseStringLiteral( PERMISSIVE_FLAGS, source : String, startQuoteIndex : Int )
   }
 
@@ -177,7 +177,7 @@ object StringLiteral {
   private def asOctalEscaped( c : Char )   : String = f"\\${c}%03o"
 
   @tailrec
-  private def _parseStringLiteral( flags : Int, source : String, index : Int, quoteState : QuoteState ) : StringLiteral.Parsed = {
+  private def _parseStringLiteral( flags : Int, source : String, index : Int, quoteState : QuoteState ) : StringLiteral.Parse = {
     val current = source.charAt( index )
 
     quoteState match {
@@ -190,7 +190,7 @@ object StringLiteral {
       }
       case InQuote( reverseNascent ) => {
         current match {
-          case '\"' => StringLiteral.Parsed( index, reverseNascent.reverse.mkString )
+          case '\"' => StringLiteral.Parse( index, reverseNascent.reverse.mkString )
           case '\\' => _parseStringLiteral( flags, source, index + 1, InQuoteAfterSlash( reverseNascent ) )
           case c    => _parseStringLiteral( flags, source, index + 1, InQuote( c :: reverseNascent ) )
         }
