@@ -259,7 +259,7 @@ object StringLiteral {
             _parseStringLiteral( flags, source, index + 1, InQuote( newChar :: reverseNascent ) )
           }
         } else {
-          throw new BadStringLiteralException( s"Bad character found in unicoe escape, not hex digit: '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
+          throw new BadStringLiteralException( s"Bad character found in unicode escape, not hex digit: '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
         }
       }
     }
