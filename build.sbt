@@ -1,12 +1,12 @@
 val nexus = "https://oss.sonatype.org/"
-val nexusSnapshots = nexus + "content/repositories/snapshots";
-val nexusReleases = nexus + "service/local/staging/deploy/maven2";
+val nexusSnapshots = nexus + "content/repositories/snapshots"
+val nexusReleases = nexus + "service/local/staging/deploy/maven2"
 
 organization := "com.mchange"
 
 name := "literal"
 
-version := "0.0.1"
+version := "0.0.2-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
