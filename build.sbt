@@ -6,11 +6,11 @@ organization := "com.mchange"
 
 name := "literal"
 
-version := "0.0.2-SNAPSHOT"
+version := "0.0.2"
 
 scalaVersion := "2.11.8"
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.2")
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.4")
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked" /*, "-Xlog-implicits" */)
 
