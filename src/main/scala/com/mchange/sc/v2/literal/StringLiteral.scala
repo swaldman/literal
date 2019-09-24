@@ -124,18 +124,18 @@ object StringLiteral {
     def formatPermissiveStringLiteral( raw : String ) : String = formatAsciiPermissiveStringLiteral( raw )
   }
 
-  def formatCStringLiteral( raw : String )                 : String = formatCStringLiteral( raw )
-  def formatGCCStringLiteral( raw : String )               : String = formatGCCStringLiteral( raw )
-  def formatAsciiJavaStringLiteral ( raw : String )        : String = formatAsciiJavaStringLiteral( raw )
-  def formatUnicodeJavaStringLiteral ( raw : String )      : String = formatUnicodeJavaStringLiteral( raw )
-  def formatAsciiScalaStringLiteral( raw : String )        : String = formatAsciiScalaStringLiteral( raw )
-  def formatUnicodeScalaStringLiteral( raw : String )      : String = formatUnicodeScalaStringLiteral( raw )
-  def formatAsciiPermissiveStringLiteral( raw : String )   : String = formatAsciiPermissiveStringLiteral( raw )
-  def formatUnicodePermissiveStringLiteral( raw : String ) : String = formatUnicodePermissiveStringLiteral( raw )
+  def formatCStringLiteral( raw : String )                 : String = Conventional.formatCStringLiteral( raw )
+  def formatGCCStringLiteral( raw : String )               : String = Conventional.formatGCCStringLiteral( raw )
+  def formatAsciiJavaStringLiteral ( raw : String )        : String = Conventional.formatAsciiJavaStringLiteral( raw )
+  def formatUnicodeJavaStringLiteral ( raw : String )      : String = Conventional.formatUnicodeJavaStringLiteral( raw )
+  def formatAsciiScalaStringLiteral( raw : String )        : String = Conventional.formatAsciiScalaStringLiteral( raw )
+  def formatUnicodeScalaStringLiteral( raw : String )      : String = Conventional.formatUnicodeScalaStringLiteral( raw )
+  def formatAsciiPermissiveStringLiteral( raw : String )   : String = Conventional.formatAsciiPermissiveStringLiteral( raw )
+  def formatUnicodePermissiveStringLiteral( raw : String ) : String = Conventional.formatUnicodePermissiveStringLiteral( raw )
 
-  def formatJavaStringLiteral( raw : String )       : String = formatAsciiJavaStringLiteral( raw )
-  def formatScalaStringLiteral( raw : String )      : String = formatAsciiScalaStringLiteral( raw )
-  def formatPermissiveStringLiteral( raw : String ) : String = formatAsciiPermissiveStringLiteral( raw )
+  def formatJavaStringLiteral( raw : String )       : String = Conventional.formatAsciiJavaStringLiteral( raw )
+  def formatScalaStringLiteral( raw : String )      : String = Conventional.formatAsciiScalaStringLiteral( raw )
+  def formatPermissiveStringLiteral( raw : String ) : String = Conventional.formatAsciiPermissiveStringLiteral( raw )
 
   private val SimpleSubstitutions = Map (
     'a'  -> 0x07.toChar,
