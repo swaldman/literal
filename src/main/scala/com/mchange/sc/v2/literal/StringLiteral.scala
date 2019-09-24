@@ -72,14 +72,66 @@ object StringLiteral {
   }
 
   def formatStringLiteral( asciiOnly : Boolean, flags : Int, raw : String ) : String = _formatStringLiteral( asciiOnly, flags, raw, 0, Nil )
-  def formatCStringLiteral( raw : String )                                  : String = _formatStringLiteral( true, C_FLAGS, raw, 0, Nil )
-  def formatGCCStringLiteral( raw : String )                                : String = _formatStringLiteral( true, GCC_FLAGS, raw, 0, Nil )
-  def formatAsciiJavaStringLiteral ( raw : String )                         : String = _formatStringLiteral( true, JAVA_FLAGS, raw, 0, Nil )
-  def formatUnicodeJavaStringLiteral ( raw : String )                       : String = _formatStringLiteral( false, JAVA_FLAGS, raw, 0, Nil )
-  def formatAsciiScalaStringLiteral( raw : String )                         : String = _formatStringLiteral( true, SCALA_FLAGS, raw, 0, Nil )
-  def formatUnicodeScalaStringLiteral( raw : String )                       : String = _formatStringLiteral( false, SCALA_FLAGS, raw, 0, Nil )
-  def formatAsciiPermissiveStringLiteral( raw : String )                    : String = _formatStringLiteral( true, PERMISSIVE_FLAGS, raw, 0, Nil )
-  def formatUnicodePermissiveStringLiteral( raw : String )                  : String = _formatStringLiteral( false, PERMISSIVE_FLAGS, raw, 0, Nil )
+
+  final object EsapeMaximizing {
+    def formatCStringLiteral( raw : String )                 : String = _formatStringLiteral( true, C_FLAGS, raw, 0, Nil )
+    def formatGCCStringLiteral( raw : String )               : String = _formatStringLiteral( true, GCC_FLAGS, raw, 0, Nil )
+    def formatAsciiJavaStringLiteral ( raw : String )        : String = _formatStringLiteral( true, JAVA_FLAGS, raw, 0, Nil )
+    def formatUnicodeJavaStringLiteral ( raw : String )      : String = _formatStringLiteral( false, JAVA_FLAGS, raw, 0, Nil )
+    def formatAsciiScalaStringLiteral( raw : String )        : String = _formatStringLiteral( true, SCALA_FLAGS, raw, 0, Nil )
+    def formatUnicodeScalaStringLiteral( raw : String )      : String = _formatStringLiteral( false, SCALA_FLAGS, raw, 0, Nil )
+    def formatAsciiPermissiveStringLiteral( raw : String )   : String = _formatStringLiteral( true, PERMISSIVE_FLAGS, raw, 0, Nil )
+    def formatUnicodePermissiveStringLiteral( raw : String ) : String = _formatStringLiteral( false, PERMISSIVE_FLAGS, raw, 0, Nil )
+
+    def formatJavaStringLiteral( raw : String )       : String = formatAsciiJavaStringLiteral( raw )
+    def formatScalaStringLiteral( raw : String )      : String = formatAsciiScalaStringLiteral( raw )
+    def formatPermissiveStringLiteral( raw : String ) : String = formatAsciiPermissiveStringLiteral( raw )
+  }
+
+  final object Conventional {
+    val CONV_FMT_C_FLAGS = {
+      import Flag._
+      a | b | f | n | r | t | v | x | backslash | doublequote | octal
+    }
+    val CONV_FMT_JAVA_FLAGS = {
+      import Flag._
+      b | f | n | r | t | u | backslash | doublequote | octal
+    }
+
+    val CONV_FMT_GCC_FLAGS = {
+      import Flag._
+      C_FLAGS | e | E
+    }
+
+    val CONV_FMT_SCALA_FLAGS = CONV_FMT_JAVA_FLAGS
+
+    val CONV_FMT_PERMISSIVE_FLAGS = {
+      import Flag._
+      a | b | f | n | r | t | u | v | x | backslash | doublequote | octal | e | E
+    }
+
+    def formatCStringLiteral( raw : String )                 : String = _formatStringLiteral( true, CONV_FMT_C_FLAGS, raw, 0, Nil )
+    def formatGCCStringLiteral( raw : String )               : String = _formatStringLiteral( true, CONV_FMT_GCC_FLAGS, raw, 0, Nil )
+    def formatAsciiJavaStringLiteral ( raw : String )        : String = _formatStringLiteral( true, CONV_FMT_JAVA_FLAGS, raw, 0, Nil )
+    def formatUnicodeJavaStringLiteral ( raw : String )      : String = _formatStringLiteral( false, CONV_FMT_JAVA_FLAGS, raw, 0, Nil )
+    def formatAsciiScalaStringLiteral( raw : String )        : String = _formatStringLiteral( true, CONV_FMT_SCALA_FLAGS, raw, 0, Nil )
+    def formatUnicodeScalaStringLiteral( raw : String )      : String = _formatStringLiteral( false, CONV_FMT_SCALA_FLAGS, raw, 0, Nil )
+    def formatAsciiPermissiveStringLiteral( raw : String )   : String = _formatStringLiteral( true, CONV_FMT_PERMISSIVE_FLAGS, raw, 0, Nil )
+    def formatUnicodePermissiveStringLiteral( raw : String ) : String = _formatStringLiteral( false, CONV_FMT_PERMISSIVE_FLAGS, raw, 0, Nil )
+
+    def formatJavaStringLiteral( raw : String )       : String = formatAsciiJavaStringLiteral( raw )
+    def formatScalaStringLiteral( raw : String )      : String = formatAsciiScalaStringLiteral( raw )
+    def formatPermissiveStringLiteral( raw : String ) : String = formatAsciiPermissiveStringLiteral( raw )
+  }
+
+  def formatCStringLiteral( raw : String )                 : String = formatCStringLiteral( raw )
+  def formatGCCStringLiteral( raw : String )               : String = formatGCCStringLiteral( raw )
+  def formatAsciiJavaStringLiteral ( raw : String )        : String = formatAsciiJavaStringLiteral( raw )
+  def formatUnicodeJavaStringLiteral ( raw : String )      : String = formatUnicodeJavaStringLiteral( raw )
+  def formatAsciiScalaStringLiteral( raw : String )        : String = formatAsciiScalaStringLiteral( raw )
+  def formatUnicodeScalaStringLiteral( raw : String )      : String = formatUnicodeScalaStringLiteral( raw )
+  def formatAsciiPermissiveStringLiteral( raw : String )   : String = formatAsciiPermissiveStringLiteral( raw )
+  def formatUnicodePermissiveStringLiteral( raw : String ) : String = formatUnicodePermissiveStringLiteral( raw )
 
   def formatJavaStringLiteral( raw : String )       : String = formatAsciiJavaStringLiteral( raw )
   def formatScalaStringLiteral( raw : String )      : String = formatAsciiScalaStringLiteral( raw )
