@@ -237,7 +237,7 @@ object StringLiteral {
         if ( current == '\"' ) {
           _parseStringLiteral( flags, source, index + 1, InQuote(Nil) )
         } else {
-          throw new BadStringLiteralException( s"A String literal must begin with '\042', not '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]" )
+          throw new BadStringLiteralException( s"""A String literal must begin with '"', not '${current}'. [source=${source}, index=${index}, quoteState=${quoteState}]""" )
         }
       }
       case InQuote( reverseNascent ) => {
