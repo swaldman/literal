@@ -1,4 +1,4 @@
-# mchange-literal
+# literal
 
 A neurotic and general library for formatting and parsing String literals
 accommodating and generating literals with a wide variety of escape conventions.
